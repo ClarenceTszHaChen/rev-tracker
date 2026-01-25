@@ -1,4 +1,4 @@
-import { put, head, del } from '@vercel/blob';
+import { put, list, del } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 
 const BLOB_NAME = 'rev-tracker-data.json';
@@ -26,11 +26,15 @@ const defaultData: AppData = {
 
 export async function GET() {
   try {
-    // Try to get existing blob
-    const blobInfo = await head(BLOB_NAME).catch(() => null);
+    // List blobs to find our data file
+    const { blobs } = await list({ prefix: BLOB_NAME });
+    const blob = blobs.find(b => b.pathname === BLOB_NAME);
 
-    if (blobInfo?.url) {
-      const response = await fetch(blobInfo.url);
+    if (blob?.url) {
+      // Add cache-busting query param
+      const response = await fetch(`${blob.url}?t=${Date.now()}`, {
+        cache: 'no-store',
+      });
       const data = await response.json();
       return NextResponse.json(data);
     }
@@ -47,7 +51,8 @@ export async function PUT(request: Request) {
 
     // Delete existing blob first (if it exists)
     try {
-      const existing = await head(BLOB_NAME).catch(() => null);
+      const { blobs } = await list({ prefix: BLOB_NAME });
+      const existing = blobs.find(b => b.pathname === BLOB_NAME);
       if (existing?.url) {
         await del(existing.url);
       }
