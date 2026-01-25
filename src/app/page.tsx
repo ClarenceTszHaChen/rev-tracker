@@ -4,13 +4,21 @@ import { useEffect, useState } from 'react';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { differenceInDays, differenceInSeconds, format, parseISO } from 'date-fns';
 import { RevenueEntry, Settings } from '@/lib/types';
-import { getRevenueEntries, getSettings } from '@/lib/storage';
+import { getRevenueEntries, getSettings, saveSettings } from '@/lib/storage';
 
 export default function Home() {
   const [entries, setEntries] = useState<RevenueEntry[]>([]);
   const [settings, setSettings] = useState<Settings>({ targetRevenue: 10000, demoDay: '' });
   const [mounted, setMounted] = useState(false);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [editingTarget, setEditingTarget] = useState(false);
+  const [editingDemo, setEditingDemo] = useState(false);
+
+  const updateSettings = (newSettings: Partial<Settings>) => {
+    const updated = { ...settings, ...newSettings };
+    setSettings(updated);
+    saveSettings(updated);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -165,10 +173,33 @@ export default function Home() {
           </div>
 
           {/* Target Revenue */}
-          <div className="bg-zinc-900 rounded-xl p-6">
-            <div className="text-3xl font-bold">
-              ${settings.targetRevenue.toLocaleString()}
-            </div>
+          <div
+            className="bg-zinc-900 rounded-xl p-6 cursor-pointer hover:bg-zinc-800 transition-colors"
+            onClick={() => setEditingTarget(true)}
+          >
+            {editingTarget ? (
+              <input
+                type="number"
+                autoFocus
+                defaultValue={settings.targetRevenue}
+                className="text-3xl font-bold bg-transparent w-full outline-none"
+                onBlur={(e) => {
+                  updateSettings({ targetRevenue: parseFloat(e.target.value) || 0 });
+                  setEditingTarget(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    updateSettings({ targetRevenue: parseFloat(e.currentTarget.value) || 0 });
+                    setEditingTarget(false);
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div className="text-3xl font-bold">
+                ${settings.targetRevenue.toLocaleString()}
+              </div>
+            )}
             <div className="text-zinc-500 text-sm mt-1">
               Target
             </div>
@@ -185,17 +216,40 @@ export default function Home() {
           </div>
 
           {/* Countdown to Demo */}
-          <div className="bg-zinc-900 rounded-xl p-6">
-            <div className="text-2xl font-bold font-mono">
-              {settings.demoDay ? (
-                <span>
-                  {countdown.days}<span className="text-zinc-500 text-lg">d </span>
-                  {String(countdown.hours).padStart(2, '0')}<span className="text-zinc-500 text-lg">h </span>
-                  {String(countdown.minutes).padStart(2, '0')}<span className="text-zinc-500 text-lg">m </span>
-                  {String(countdown.seconds).padStart(2, '0')}<span className="text-zinc-500 text-lg">s</span>
-                </span>
-              ) : '—'}
-            </div>
+          <div
+            className="bg-zinc-900 rounded-xl p-6 cursor-pointer hover:bg-zinc-800 transition-colors"
+            onClick={() => setEditingDemo(true)}
+          >
+            {editingDemo ? (
+              <input
+                type="date"
+                autoFocus
+                defaultValue={settings.demoDay}
+                className="text-xl font-bold bg-transparent w-full outline-none"
+                onBlur={(e) => {
+                  updateSettings({ demoDay: e.target.value });
+                  setEditingDemo(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    updateSettings({ demoDay: e.currentTarget.value });
+                    setEditingDemo(false);
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div className="text-2xl font-bold font-mono">
+                {settings.demoDay ? (
+                  <span>
+                    {countdown.days}<span className="text-zinc-500 text-lg">d </span>
+                    {String(countdown.hours).padStart(2, '0')}<span className="text-zinc-500 text-lg">h </span>
+                    {String(countdown.minutes).padStart(2, '0')}<span className="text-zinc-500 text-lg">m </span>
+                    {String(countdown.seconds).padStart(2, '0')}<span className="text-zinc-500 text-lg">s</span>
+                  </span>
+                ) : 'Set date'}
+              </div>
+            )}
             <div className="text-zinc-500 text-sm mt-1">
               Until Demo Day
             </div>
