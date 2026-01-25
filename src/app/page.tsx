@@ -62,22 +62,6 @@ export default function Home() {
     ? differenceInDays(parseISO(settings.demoDay), new Date())
     : null;
 
-  // Required weekly growth rate to hit target
-  const calculateRequiredGrowth = () => {
-    if (!settings.demoDay || totalRevenue >= settings.targetRevenue) return 0;
-    if (totalRevenue === 0) return Infinity;
-
-    const weeksLeft = (daysUntilDemo || 0) / 7;
-    if (weeksLeft <= 0) return Infinity;
-
-    // Formula: targetRevenue = currentRevenue * (1 + r)^weeks
-    // Solving for r: r = (targetRevenue/currentRevenue)^(1/weeks) - 1
-    const requiredMultiplier = settings.targetRevenue / totalRevenue;
-    const weeklyGrowthRate = (Math.pow(requiredMultiplier, 1 / weeksLeft) - 1) * 100;
-    return weeklyGrowthRate;
-  };
-
-  const requiredGrowth = calculateRequiredGrowth();
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
@@ -169,13 +153,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Required Growth */}
+          {/* Remaining to Target */}
           <div className="bg-zinc-900 rounded-xl p-6">
-            <div className={`text-3xl font-bold ${requiredGrowth <= growthRate ? 'text-green-500' : 'text-yellow-500'}`}>
-              {requiredGrowth === Infinity ? '—' : `${requiredGrowth.toFixed(1)}%`}
+            <div className="text-3xl font-bold">
+              ${Math.max(0, settings.targetRevenue - totalRevenue).toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
             <div className="text-zinc-500 text-sm mt-1">
-              Required Weekly
+              Remaining
             </div>
           </div>
 
