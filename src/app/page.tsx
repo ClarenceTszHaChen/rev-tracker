@@ -80,15 +80,22 @@ export default function Home() {
     ? differenceInDays(parseISO(settings.demoDay), new Date())
     : null;
 
-  // Calculate money needed this week to stay on track
-  const weeklyTarget = (() => {
-    if (!settings.demoDay || totalRevenue >= settings.targetRevenue) return 0;
+  // Calculate required weekly growth rate and this week's target
+  const weeksLeft = (daysUntilDemo || 0) / 7;
 
-    const weeksLeft = (daysUntilDemo || 0) / 7;
-    if (weeksLeft <= 0) return settings.targetRevenue - totalRevenue;
+  // Required weekly growth rate to hit target: r = (target/current)^(1/weeks) - 1
+  const requiredGrowthRate = (() => {
+    if (!settings.demoDay || totalRevenue <= 0 || totalRevenue >= settings.targetRevenue) return 0;
+    if (weeksLeft <= 0) return 0;
+    return (Math.pow(settings.targetRevenue / totalRevenue, 1 / weeksLeft) - 1) * 100;
+  })();
 
-    const remaining = settings.targetRevenue - totalRevenue;
-    return remaining / weeksLeft;
+  // This week's MRR goal = current * (1 + growth rate)
+  const thisWeekGoal = (() => {
+    if (!settings.demoDay || totalRevenue <= 0 || totalRevenue >= settings.targetRevenue) return totalRevenue;
+    if (weeksLeft <= 0) return settings.targetRevenue;
+    const rate = requiredGrowthRate / 100;
+    return totalRevenue * (1 + rate);
   })();
 
 
@@ -106,12 +113,12 @@ export default function Home() {
           </a>
         </div>
 
-        {/* Main Revenue Display */}
-        <div className="mb-12">
-          <div className="text-6xl font-bold mb-2">
+        {/* Main Revenue Display - HUGE */}
+        <div className="mb-16 text-center">
+          <div className="text-[120px] md:text-[180px] font-bold leading-none tracking-tight">
             ${totalRevenue.toLocaleString()}
           </div>
-          <div className="text-zinc-500">
+          <div className="text-zinc-500 text-2xl mt-4">
             MRR
           </div>
         </div>
@@ -162,13 +169,13 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {/* Money Needed This Week */}
+          {/* This Week's Goal */}
           <div className="bg-zinc-900 rounded-xl p-6">
             <div className="text-3xl font-bold text-yellow-500">
-              ${weeklyTarget.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              ${thisWeekGoal.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
             <div className="text-zinc-500 text-sm mt-1">
-              Needed/Week
+              This Week&apos;s Goal
             </div>
           </div>
 
@@ -205,13 +212,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Remaining to Target */}
+          {/* Required Growth Rate */}
           <div className="bg-zinc-900 rounded-xl p-6">
-            <div className="text-3xl font-bold">
-              ${Math.max(0, settings.targetRevenue - totalRevenue).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            <div className="text-3xl font-bold text-green-500">
+              {requiredGrowthRate > 0 ? `${requiredGrowthRate.toFixed(1)}%` : '—'}
             </div>
             <div className="text-zinc-500 text-sm mt-1">
-              Remaining
+              Weekly Growth Needed
             </div>
           </div>
 
