@@ -44,27 +44,18 @@ export default function Home() {
   // Current total revenue
   const totalRevenue = entries.reduce((sum, e) => sum + e.amount, 0);
 
-  // Calculate week-over-week growth rate
-  const calculateGrowthRate = () => {
-    if (sortedEntries.length < 2) return 0;
+  // Calculate money needed this week to stay on track
+  const calculateWeeklyTarget = () => {
+    if (!settings.demoDay || totalRevenue >= settings.targetRevenue) return 0;
 
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const weeksLeft = (daysUntilDemo || 0) / 7;
+    if (weeksLeft <= 0) return settings.targetRevenue - totalRevenue;
 
-    const thisWeekRevenue = sortedEntries
-      .filter(e => new Date(e.date) >= oneWeekAgo)
-      .reduce((sum, e) => sum + e.amount, 0);
-
-    const lastWeekRevenue = sortedEntries
-      .filter(e => new Date(e.date) >= twoWeeksAgo && new Date(e.date) < oneWeekAgo)
-      .reduce((sum, e) => sum + e.amount, 0);
-
-    if (lastWeekRevenue === 0) return thisWeekRevenue > 0 ? 100 : 0;
-    return ((thisWeekRevenue - lastWeekRevenue) / lastWeekRevenue) * 100;
+    const remaining = settings.targetRevenue - totalRevenue;
+    return remaining / weeksLeft;
   };
 
-  const growthRate = calculateGrowthRate();
+  const weeklyTarget = calculateWeeklyTarget();
 
   // Days until demo day
   const daysUntilDemo = settings.demoDay
@@ -158,13 +149,13 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {/* Current Growth Rate */}
+          {/* Money Needed This Week */}
           <div className="bg-zinc-900 rounded-xl p-6">
-            <div className={`text-3xl font-bold ${growthRate >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {growthRate >= 0 ? '+' : ''}{growthRate.toFixed(1)}%
+            <div className="text-3xl font-bold text-yellow-500">
+              ${weeklyTarget.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
             <div className="text-zinc-500 text-sm mt-1">
-              Weekly Growth
+              Needed/Week
             </div>
           </div>
 
