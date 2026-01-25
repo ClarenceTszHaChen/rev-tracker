@@ -1,6 +1,9 @@
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const BLOB_NAME = 'rev-tracker-data.json';
 
 interface AppData {
@@ -54,9 +57,13 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    });
   } catch {
-    return NextResponse.json(defaultData);
+    return NextResponse.json(defaultData, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    });
   }
 }
 
