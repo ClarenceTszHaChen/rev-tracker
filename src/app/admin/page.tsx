@@ -1,59 +1,58 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { format, parseISO } from 'date-fns';
 import { RevenueEntry, Settings } from '@/lib/types';
-import {
-  getRevenueEntries,
-  addRevenueEntry,
-  deleteRevenueEntry,
-  getSettings,
-  saveSettings,
-} from '@/lib/storage';
+import { fetchData, addEntry, deleteEntry, updateSettings } from '@/lib/storage';
 
 export default function AdminPage() {
   const [entries, setEntries] = useState<RevenueEntry[]>([]);
-  const [settings, setSettings] = useState<Settings>({ targetRevenue: 10000, demoDay: '' });
-  const [mounted, setMounted] = useState(false);
+  const [settings, setSettings] = useState<Settings>({ targetRevenue: 25000, demoDay: '' });
+  const [loading, setLoading] = useState(true);
 
   // Form state
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [note, setNote] = useState('');
 
-  useEffect(() => {
-    setMounted(true);
-    setEntries(getRevenueEntries());
-    setSettings(getSettings());
+  const loadData = useCallback(async () => {
+    const data = await fetchData();
+    setEntries(data.entries);
+    setSettings(data.settings);
+    setLoading(false);
   }, []);
 
-  const handleAddEntry = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleAddEntry = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !date) return;
 
-    addRevenueEntry({
+    const data = await addEntry({
       amount: parseFloat(amount),
       date,
       note: note || undefined,
     });
 
-    setEntries(getRevenueEntries());
+    setEntries(data.entries);
     setAmount('');
     setNote('');
   };
 
-  const handleDelete = (id: string) => {
-    deleteRevenueEntry(id);
-    setEntries(getRevenueEntries());
+  const handleDelete = async (id: string) => {
+    const data = await deleteEntry(id);
+    setEntries(data.entries);
   };
 
-  const handleSettingsChange = (newSettings: Partial<Settings>) => {
+  const handleSettingsChange = async (newSettings: Partial<Settings>) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
-    saveSettings(updated);
+    await updateSettings(newSettings);
   };
 
-  if (!mounted) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-zinc-500">Loading...</div>
