@@ -1,4 +1,4 @@
-import { put, list, del } from '@vercel/blob';
+import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 
 const BLOB_NAME = 'rev-tracker-data.json';
@@ -24,22 +24,37 @@ const defaultData: AppData = {
   },
 };
 
+// Get the blob URL base from the token
+function getBlobUrlBase(): string | null {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return null;
+
+  // Token format: vercel_blob_rw_{storeId}_{rest}
+  const match = token.match(/^vercel_blob_rw_([^_]+)_/);
+  if (!match) return null;
+
+  const storeId = match[1].toLowerCase();
+  return `https://${storeId}.public.blob.vercel-storage.com`;
+}
+
 export async function GET() {
   try {
-    // List blobs to find our data file
-    const { blobs } = await list({ prefix: BLOB_NAME });
-    const blob = blobs.find(b => b.pathname === BLOB_NAME);
-
-    if (blob?.url) {
-      // Add cache-busting query param
-      const response = await fetch(`${blob.url}?t=${Date.now()}`, {
-        cache: 'no-store',
-      });
-      const data = await response.json();
-      return NextResponse.json(data);
+    const baseUrl = getBlobUrlBase();
+    if (!baseUrl) {
+      return NextResponse.json(defaultData);
     }
 
-    return NextResponse.json(defaultData);
+    // Fetch directly from the known URL with cache busting
+    const response = await fetch(`${baseUrl}/${BLOB_NAME}?t=${Date.now()}`, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(defaultData);
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch {
     return NextResponse.json(defaultData);
   }
@@ -49,7 +64,6 @@ export async function PUT(request: Request) {
   try {
     const data: AppData = await request.json();
 
-    // Just overwrite - addRandomSuffix: false allows this
     const blob = await put(BLOB_NAME, JSON.stringify(data), {
       access: 'public',
       addRandomSuffix: false,
