@@ -53,6 +53,7 @@ export async function PUT(request: Request) {
     const blob = await put(BLOB_NAME, JSON.stringify(data), {
       access: 'public',
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
 
     return NextResponse.json({ success: true, url: blob.url });
