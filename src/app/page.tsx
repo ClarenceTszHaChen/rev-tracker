@@ -67,8 +67,13 @@ export default function Home() {
   // Current total revenue
   const totalRevenue = entries.reduce((sum, e) => sum + e.amount, 0);
 
+  // Days until demo day
+  const daysUntilDemo = settings.demoDay
+    ? differenceInDays(parseISO(settings.demoDay), new Date())
+    : null;
+
   // Calculate money needed this week to stay on track
-  const calculateWeeklyTarget = () => {
+  const weeklyTarget = (() => {
     if (!settings.demoDay || totalRevenue >= settings.targetRevenue) return 0;
 
     const weeksLeft = (daysUntilDemo || 0) / 7;
@@ -76,14 +81,7 @@ export default function Home() {
 
     const remaining = settings.targetRevenue - totalRevenue;
     return remaining / weeksLeft;
-  };
-
-  const weeklyTarget = calculateWeeklyTarget();
-
-  // Days until demo day
-  const daysUntilDemo = settings.demoDay
-    ? differenceInDays(parseISO(settings.demoDay), new Date())
-    : null;
+  })();
 
 
   return (
