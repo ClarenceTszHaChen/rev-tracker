@@ -222,8 +222,9 @@ export default function Home() {
           >
             {editingDemo ? (
               <input
-                type="date"
+                type="text"
                 autoFocus
+                placeholder="YYYY-MM-DD"
                 defaultValue={settings.demoDay}
                 className="text-xl font-bold bg-transparent w-full outline-none"
                 onBlur={(e) => {

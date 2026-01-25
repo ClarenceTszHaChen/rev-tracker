@@ -93,9 +93,10 @@ export default function AdminPage() {
               />
             </div>
             <div>
-              <label className="block text-sm text-zinc-500 mb-2">Demo Day</label>
+              <label className="block text-sm text-zinc-500 mb-2">Demo Day (YYYY-MM-DD)</label>
               <input
-                type="date"
+                type="text"
+                placeholder="2026-03-23"
                 value={settings.demoDay}
                 onChange={(e) => handleSettingsChange({ demoDay: e.target.value })}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-zinc-500"
@@ -122,9 +123,10 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-zinc-500 mb-2">Date</label>
+                <label className="block text-sm text-zinc-500 mb-2">Date (YYYY-MM-DD)</label>
                 <input
-                  type="date"
+                  type="text"
+                  placeholder="2026-01-25"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-zinc-500"
