@@ -16,7 +16,9 @@ const defaultData: AppData = {
 // Fetch all data from the server
 export async function fetchData(): Promise<AppData> {
   try {
-    const response = await fetch('/api/data');
+    const response = await fetch(`/api/data?t=${Date.now()}`, {
+      cache: 'no-store',
+    });
     if (!response.ok) throw new Error('Failed to fetch');
     return await response.json();
   } catch {

@@ -46,6 +46,20 @@ export default function AdminPage() {
     setEntries(data.entries);
   };
 
+  const handleClearAll = async () => {
+    if (!confirm('Delete all entries?')) return;
+    const data = await fetchData();
+    data.entries = [];
+    const response = await fetch(`/api/data?t=${Date.now()}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (response.ok) {
+      setEntries([]);
+    }
+  };
+
   const handleSettingsChange = async (newSettings: Partial<Settings>) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
@@ -154,7 +168,17 @@ export default function AdminPage() {
 
         {/* Revenue Entries */}
         <div className="bg-zinc-900 rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Revenue History</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Revenue History</h2>
+            {sortedEntries.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="text-sm text-red-500 hover:text-red-400"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
           {sortedEntries.length === 0 ? (
             <p className="text-zinc-500 text-center py-8">No entries yet</p>
           ) : (
@@ -173,10 +197,10 @@ export default function AdminPage() {
                   </div>
                   <button
                     onClick={() => handleDelete(entry.id)}
-                    className="text-zinc-500 hover:text-red-500 transition-colors"
+                    className="text-red-500 hover:text-red-400 transition-colors p-2"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
