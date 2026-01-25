@@ -49,17 +49,7 @@ export async function PUT(request: Request) {
   try {
     const data: AppData = await request.json();
 
-    // Delete existing blob first (if it exists)
-    try {
-      const { blobs } = await list({ prefix: BLOB_NAME });
-      const existing = blobs.find(b => b.pathname === BLOB_NAME);
-      if (existing?.url) {
-        await del(existing.url);
-      }
-    } catch {
-      // Ignore delete errors
-    }
-
+    // Just overwrite - addRandomSuffix: false allows this
     const blob = await put(BLOB_NAME, JSON.stringify(data), {
       access: 'public',
       addRandomSuffix: false,
@@ -68,6 +58,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: true, url: blob.url });
   } catch (error) {
     console.error('Error saving data:', error);
-    return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save data', details: String(error) }, { status: 500 });
   }
 }
