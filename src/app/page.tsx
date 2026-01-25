@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { differenceInDays, format, parseISO } from 'date-fns';
+import { differenceInDays, differenceInSeconds, format, parseISO } from 'date-fns';
 import { RevenueEntry, Settings } from '@/lib/types';
 import { getRevenueEntries, getSettings } from '@/lib/storage';
 
@@ -10,12 +10,35 @@ export default function Home() {
   const [entries, setEntries] = useState<RevenueEntry[]>([]);
   const [settings, setSettings] = useState<Settings>({ targetRevenue: 10000, demoDay: '' });
   const [mounted, setMounted] = useState(false);
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     setMounted(true);
     setEntries(getRevenueEntries());
     setSettings(getSettings());
   }, []);
+
+  // Live countdown timer
+  useEffect(() => {
+    if (!settings.demoDay) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const demo = parseISO(settings.demoDay);
+      const totalSeconds = Math.max(0, differenceInSeconds(demo, now));
+
+      const days = Math.floor(totalSeconds / (24 * 60 * 60));
+      const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+      const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+      const seconds = totalSeconds % 60;
+
+      setCountdown({ days, hours, minutes, seconds });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [settings.demoDay]);
 
   if (!mounted) {
     return (
@@ -83,7 +106,7 @@ export default function Home() {
             ${totalRevenue.toLocaleString()}
           </div>
           <div className="text-zinc-500">
-            Total Revenue
+            MRR
           </div>
         </div>
 
@@ -163,13 +186,20 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Days Until Demo */}
+          {/* Countdown to Demo */}
           <div className="bg-zinc-900 rounded-xl p-6">
-            <div className="text-3xl font-bold">
-              {daysUntilDemo !== null ? daysUntilDemo : '—'}
+            <div className="text-2xl font-bold font-mono">
+              {settings.demoDay ? (
+                <span>
+                  {countdown.days}<span className="text-zinc-500 text-lg">d </span>
+                  {String(countdown.hours).padStart(2, '0')}<span className="text-zinc-500 text-lg">h </span>
+                  {String(countdown.minutes).padStart(2, '0')}<span className="text-zinc-500 text-lg">m </span>
+                  {String(countdown.seconds).padStart(2, '0')}<span className="text-zinc-500 text-lg">s</span>
+                </span>
+              ) : '—'}
             </div>
             <div className="text-zinc-500 text-sm mt-1">
-              Days to Demo
+              Until Demo Day
             </div>
           </div>
         </div>
