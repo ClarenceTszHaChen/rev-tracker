@@ -1,4 +1,4 @@
-import { put, head } from '@vercel/blob';
+import { put, head, del } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 
 const BLOB_NAME = 'rev-tracker-data.json';
@@ -44,6 +44,16 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const data: AppData = await request.json();
+
+    // Delete existing blob first (if it exists)
+    try {
+      const existing = await head(BLOB_NAME).catch(() => null);
+      if (existing?.url) {
+        await del(existing.url);
+      }
+    } catch {
+      // Ignore delete errors
+    }
 
     const blob = await put(BLOB_NAME, JSON.stringify(data), {
       access: 'public',
