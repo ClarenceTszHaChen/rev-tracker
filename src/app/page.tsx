@@ -145,6 +145,7 @@ export default function Home() {
                       tickLine={false}
                       tick={{ fill: '#71717a', fontSize: 11 }}
                       tickFormatter={(value) => `$${value.toLocaleString()}`}
+                      domain={[0, 'dataMax']}
                     />
                     <Tooltip
                       contentStyle={{
@@ -184,6 +185,7 @@ export default function Home() {
                       tickLine={false}
                       tick={{ fill: '#71717a', fontSize: 11 }}
                       tickFormatter={(value) => `$${value.toLocaleString()}`}
+                      domain={[0, 'dataMax']}
                     />
                     <Tooltip
                       contentStyle={{
