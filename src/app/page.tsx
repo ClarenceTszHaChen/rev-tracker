@@ -82,18 +82,6 @@ export default function Home() {
     };
   });
 
-  // Monthly aggregation for right chart - cumulative revenue at end of each month
-  const monthlyData: { date: string; revenue: number }[] = [];
-  let monthlyCumulative = 0;
-  const monthGroups = new Map<string, number>();
-  for (const entry of sortedEntries) {
-    const monthKey = format(parseISO(entry.date), 'MMM yyyy');
-    monthlyCumulative += entry.amount;
-    monthGroups.set(monthKey, monthlyCumulative);
-  }
-  for (const [month, revenue] of monthGroups) {
-    monthlyData.push({ date: month, revenue });
-  }
 
   // Current total revenue
   const totalRevenue = entries.reduce((sum, e) => sum + e.amount, 0);
@@ -137,100 +125,48 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Charts */}
+        {/* Chart */}
         {chartData.length > 0 && (
-          <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Cumulative MRR */}
-            <div>
-              <h3 className="text-zinc-500 text-sm mb-3">Cumulative MRR</h3>
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#71717a', fontSize: 11 }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#71717a', fontSize: 11 }}
-                      tickFormatter={(value) => `$${value.toLocaleString()}`}
-                      domain={[0, 'dataMax']}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#18181b',
-                        border: '1px solid #27272a',
-                        borderRadius: '8px',
-                      }}
-                      labelStyle={{ color: '#fff' }}
-                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Total MRR']}
-                    />
-                    <Area
-                      type="linear"
-                      dataKey="revenue"
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      fill="url(#colorRevenue)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Cumulative Revenue line chart */}
-            <div>
-              <h3 className="text-zinc-500 text-sm mb-3">Cumulative Revenue</h3>
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={monthlyData}>
-                    <defs>
-                      <linearGradient id="colorMonthly" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#71717a', fontSize: 11 }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#71717a', fontSize: 11 }}
-                      tickFormatter={(value) => `$${value.toLocaleString()}`}
-                      domain={[0, 'dataMax']}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#18181b',
-                        border: '1px solid #27272a',
-                        borderRadius: '8px',
-                      }}
-                      labelStyle={{ color: '#fff' }}
-                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
-                    />
-                    <Area
-                      type="linear"
-                      dataKey="revenue"
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      fill="url(#colorMonthly)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+          <div className="mb-12 h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#71717a', fontSize: 12 }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#71717a', fontSize: 12 }}
+                  tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  domain={[0, 'dataMax']}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#18181b',
+                    border: '1px solid #27272a',
+                    borderRadius: '8px',
+                  }}
+                  labelStyle={{ color: '#fff' }}
+                  formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
+                />
+                <Area
+                  type="linear"
+                  dataKey="revenue"
+                  stroke="#22c55e"
+                  strokeWidth={2}
+                  fill="url(#colorRevenue)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         )}
 
