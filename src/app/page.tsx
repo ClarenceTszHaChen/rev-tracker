@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { differenceInDays, differenceInSeconds, format, parseISO } from 'date-fns';
+import { differenceInDays, differenceInSeconds, format, parseISO, startOfWeek, endOfWeek as getEndOfWeek } from 'date-fns';
 import { RevenueEntry, Settings } from '@/lib/types';
 import { fetchData, updateSettings as apiUpdateSettings } from '@/lib/storage';
 
@@ -80,28 +80,19 @@ export default function Home() {
   // Current total revenue
   const totalRevenue = entries.reduce((sum, e) => sum + e.amount, 0);
 
-  // Days until demo day
-  const daysUntilDemo = settings.demoDay
-    ? differenceInDays(parseISO(settings.demoDay), new Date())
-    : null;
 
-  // Calculate required weekly growth rate and this week's target
-  const weeksLeft = (daysUntilDemo || 0) / 7;
+  // Split remaining revenue evenly across full calendar weeks (Mon-Sun) until demo
+  const remaining = settings.targetRevenue - totalRevenue;
+  const now = new Date();
+  const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
+  const weekEnd = getEndOfWeek(now, { weekStartsOn: 1 }); // Sunday
+  const demo = settings.demoDay ? parseISO(settings.demoDay) : null;
 
-  // Required weekly growth rate to hit target: r = (target/current)^(1/weeks) - 1
-  const requiredGrowthRate = (() => {
-    if (!settings.demoDay || totalRevenue <= 0 || totalRevenue >= settings.targetRevenue) return 0;
-    if (weeksLeft <= 0) return 0;
-    return (Math.pow(settings.targetRevenue / totalRevenue, 1 / weeksLeft) - 1) * 100;
-  })();
+  // Count full weeks from this week's Monday to demo day
+  const weeksUntilDemo = demo ? Math.max(1, Math.ceil(differenceInDays(demo, weekStart) / 7)) : 0;
+  const addThisWeek = weeksUntilDemo > 0 && remaining > 0 ? Math.round(remaining / weeksUntilDemo) : 0;
+  const perWeekNeeded = addThisWeek;
 
-  // This week's MRR goal = current * (1 + growth rate)
-  const thisWeekGoal = (() => {
-    if (!settings.demoDay || totalRevenue <= 0 || totalRevenue >= settings.targetRevenue) return totalRevenue;
-    if (weeksLeft <= 0) return settings.targetRevenue;
-    const rate = requiredGrowthRate / 100;
-    return totalRevenue * (1 + rate);
-  })();
 
 
   return (
@@ -174,13 +165,13 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {/* This Week's Goal */}
+          {/* This Week's Goal - even split across calendar weeks */}
           <div className="bg-zinc-900 rounded-xl p-6">
             <div className="text-3xl font-bold text-yellow-500">
-              ${thisWeekGoal.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              {addThisWeek > 0 ? `+$${addThisWeek.toLocaleString()}` : '—'}
             </div>
             <div className="text-zinc-500 text-sm mt-1">
-              This Week&apos;s Goal
+              Add {format(weekStart, 'MMM d')} – {format(weekEnd, 'MMM d')}
             </div>
           </div>
 
@@ -217,13 +208,13 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Required Growth Rate */}
+          {/* Revenue Needed Per Week */}
           <div className="bg-zinc-900 rounded-xl p-6">
             <div className="text-3xl font-bold text-green-500">
-              {requiredGrowthRate > 0 ? `${requiredGrowthRate.toFixed(1)}%` : '—'}
+              {perWeekNeeded > 0 ? `$${Math.round(perWeekNeeded).toLocaleString()}` : '—'}
             </div>
             <div className="text-zinc-500 text-sm mt-1">
-              Weekly Growth Needed
+              Needed Per Week
             </div>
           </div>
 
