@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, LineChart, Line } from 'recharts';
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { differenceInDays, differenceInSeconds, format, parseISO, startOfWeek, endOfWeek as getEndOfWeek } from 'date-fns';
 import { RevenueEntry, Settings } from '@/lib/types';
 import { fetchData, updateSettings as apiUpdateSettings } from '@/lib/storage';
@@ -191,7 +191,13 @@ export default function Home() {
               <h3 className="text-zinc-500 text-sm mb-3">Cumulative Revenue</h3>
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyData}>
+                  <AreaChart data={monthlyData}>
+                    <defs>
+                      <linearGradient id="colorMonthly" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                     <XAxis
                       dataKey="date"
                       axisLine={false}
@@ -214,14 +220,14 @@ export default function Home() {
                       labelStyle={{ color: '#fff' }}
                       formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
                     />
-                    <Line
+                    <Area
                       type="linear"
                       dataKey="revenue"
                       stroke="#22c55e"
                       strokeWidth={2}
-                      dot={false}
+                      fill="url(#colorMonthly)"
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
