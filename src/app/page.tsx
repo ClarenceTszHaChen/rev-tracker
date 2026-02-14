@@ -123,6 +123,9 @@ export default function Home() {
           <div className="text-zinc-500 text-2xl mt-4">
             MRR
           </div>
+          <div className="text-zinc-600 text-lg mt-2">
+            ${(totalRevenue * 12).toLocaleString()} ARR
+          </div>
         </div>
 
         {/* Chart */}
