@@ -66,14 +66,19 @@ export default function Home() {
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
-  // Calculate cumulative revenue for chart
+  // Aggregate entries by date, then calculate cumulative revenue
+  const dailyTotals = new Map<string, number>();
+  for (const entry of sortedEntries) {
+    const key = entry.date;
+    dailyTotals.set(key, (dailyTotals.get(key) || 0) + entry.amount);
+  }
   let cumulative = 0;
-  const chartData = sortedEntries.map(entry => {
-    cumulative += entry.amount;
+  const chartData = Array.from(dailyTotals.entries()).map(([date, amount]) => {
+    cumulative += amount;
     return {
-      date: format(parseISO(entry.date), 'MMM d'),
+      date: format(parseISO(date), 'MMM d'),
       revenue: cumulative,
-      added: entry.amount,
+      added: amount,
     };
   });
 
