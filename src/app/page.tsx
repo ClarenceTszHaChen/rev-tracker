@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, BarChart, Bar } from 'recharts';
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, LineChart, Line } from 'recharts';
 import { differenceInDays, differenceInSeconds, format, parseISO, startOfWeek, endOfWeek as getEndOfWeek } from 'date-fns';
 import { RevenueEntry, Settings } from '@/lib/types';
 import { fetchData, updateSettings as apiUpdateSettings } from '@/lib/storage';
@@ -167,12 +167,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Revenue per entry */}
+            {/* Cumulative Revenue line chart */}
             <div>
-              <h3 className="text-zinc-500 text-sm mb-3">Revenue Added</h3>
+              <h3 className="text-zinc-500 text-sm mb-3">Cumulative Revenue</h3>
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
+                  <LineChart data={chartData}>
                     <XAxis
                       dataKey="date"
                       axisLine={false}
@@ -192,14 +192,16 @@ export default function Home() {
                         borderRadius: '8px',
                       }}
                       labelStyle={{ color: '#fff' }}
-                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Added']}
+                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
                     />
-                    <Bar
-                      dataKey="added"
-                      fill="#22c55e"
-                      radius={[4, 4, 0, 0]}
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#22c55e"
+                      strokeWidth={2}
+                      dot={false}
                     />
-                  </BarChart>
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
