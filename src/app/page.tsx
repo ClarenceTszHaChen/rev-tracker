@@ -156,7 +156,7 @@ export default function Home() {
                       formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Total MRR']}
                     />
                     <Area
-                      type="monotone"
+                      type="linear"
                       dataKey="revenue"
                       stroke="#22c55e"
                       strokeWidth={2}
@@ -195,7 +195,7 @@ export default function Home() {
                       formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
                     />
                     <Line
-                      type="monotone"
+                      type="linear"
                       dataKey="revenue"
                       stroke="#22c55e"
                       strokeWidth={2}
