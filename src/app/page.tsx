@@ -117,14 +117,19 @@ export default function Home() {
 
         {/* Main Revenue Display - HUGE */}
         <div className="mb-16 text-center">
-          <div className="text-[120px] md:text-[180px] font-bold leading-none tracking-tight">
-            ${totalRevenue.toLocaleString()}
-          </div>
-          <div className="text-zinc-500 text-2xl mt-4">
-            MRR
-          </div>
-          <div className="text-zinc-600 text-lg mt-2">
-            ${(totalRevenue * 12).toLocaleString()} ARR
+          <div className="flex items-baseline justify-center gap-8">
+            <div>
+              <div className="text-[120px] md:text-[180px] font-bold leading-none tracking-tight">
+                ${totalRevenue.toLocaleString()}
+              </div>
+              <div className="text-zinc-500 text-2xl mt-4">MRR</div>
+            </div>
+            <div>
+              <div className="text-[60px] md:text-[90px] font-bold leading-none tracking-tight text-zinc-500">
+                ${(totalRevenue * 12).toLocaleString()}
+              </div>
+              <div className="text-zinc-600 text-xl mt-4">ARR</div>
+            </div>
           </div>
         </div>
 
