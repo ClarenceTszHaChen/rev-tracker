@@ -77,6 +77,19 @@ export default function Home() {
     };
   });
 
+  // Monthly aggregation for right chart - cumulative revenue at end of each month
+  const monthlyData: { date: string; revenue: number }[] = [];
+  let monthlyCumulative = 0;
+  const monthGroups = new Map<string, number>();
+  for (const entry of sortedEntries) {
+    const monthKey = format(parseISO(entry.date), 'MMM yyyy');
+    monthlyCumulative += entry.amount;
+    monthGroups.set(monthKey, monthlyCumulative);
+  }
+  for (const [month, revenue] of monthGroups) {
+    monthlyData.push({ date: month, revenue });
+  }
+
   // Current total revenue
   const totalRevenue = entries.reduce((sum, e) => sum + e.amount, 0);
 
@@ -173,7 +186,7 @@ export default function Home() {
               <h3 className="text-zinc-500 text-sm mb-3">Cumulative Revenue</h3>
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
+                  <LineChart data={monthlyData}>
                     <XAxis
                       dataKey="date"
                       axisLine={false}
